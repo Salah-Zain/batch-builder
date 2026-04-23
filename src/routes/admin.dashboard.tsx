@@ -2,8 +2,12 @@ import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Progress } from "@/components/ui/progress";
 import { PerpexLogo } from "@/components/PerpexLogo";
-import { adminLogout, getSubmissions, isAdminLoggedIn, type Submission } from "@/lib/storage";
+import { adminLogout, getSubmissions, type Submission } from "@/lib/storage";
+import { useAdminGuard } from "@/hooks/useAdminGuard";
+import { Toaster } from "@/components/ui/sonner";
+import { toast } from "sonner";
 import {
   Dialog,
   DialogContent,
