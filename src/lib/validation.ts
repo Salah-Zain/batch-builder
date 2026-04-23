@@ -41,7 +41,7 @@ export const submissionSchema = z.object({
   bottleneck: z.string().min(1, { message: "Please select your biggest bottleneck" }),
   hoursWeekly: z.string().min(1, { message: "Please choose your weekly hours" }),
   outcome: longText("Outcome", 15, 600),
-  agreed: z.literal(true, { errorMap: () => ({ message: "You must agree to commit" }) }),
+  agreed: z.literal(true, { message: "You must agree to commit" }),
 });
 
 // Validate a partial subset by step
