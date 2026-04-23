@@ -250,17 +250,25 @@ function ApplyPage() {
           {step === 2 && (
             <div className="space-y-5">
               <SectionHead n={3} title="Reality Check" />
-              <Field label="4. Who is your exact target customer?" required>
-                <Textarea rows={2} value={form.targetCustomer} onChange={(e) => update("targetCustomer", e.target.value)} maxLength={400} />
+              <Field label="4. Who is your exact target customer?" required error={fieldErrors.targetCustomer}>
+                <Textarea rows={2} value={form.targetCustomer} onChange={(e) => update("targetCustomer", e.target.value)} maxLength={400}
+                  aria-invalid={!!fieldErrors.targetCustomer}
+                  className={fieldErrors.targetCustomer ? "border-destructive focus-visible:ring-destructive" : ""} />
               </Field>
-              <Field label="5. What real problem are you solving?" required>
-                <Textarea rows={2} value={form.problem} onChange={(e) => update("problem", e.target.value)} maxLength={400} />
+              <Field label="5. What real problem are you solving?" required error={fieldErrors.problem}>
+                <Textarea rows={2} value={form.problem} onChange={(e) => update("problem", e.target.value)} maxLength={400}
+                  aria-invalid={!!fieldErrors.problem}
+                  className={fieldErrors.problem ? "border-destructive focus-visible:ring-destructive" : ""} />
               </Field>
-              <Field label="6. How are people currently solving this problem?" required>
-                <Textarea rows={2} value={form.currentSolutions} onChange={(e) => update("currentSolutions", e.target.value)} maxLength={400} />
+              <Field label="6. How are people currently solving this problem?" required error={fieldErrors.currentSolutions}>
+                <Textarea rows={2} value={form.currentSolutions} onChange={(e) => update("currentSolutions", e.target.value)} maxLength={400}
+                  aria-invalid={!!fieldErrors.currentSolutions}
+                  className={fieldErrors.currentSolutions ? "border-destructive focus-visible:ring-destructive" : ""} />
               </Field>
-              <Field label="7. Why would they switch to you?" required>
-                <Textarea rows={2} value={form.whySwitch} onChange={(e) => update("whySwitch", e.target.value)} maxLength={400} />
+              <Field label="7. Why would they switch to you?" required error={fieldErrors.whySwitch}>
+                <Textarea rows={2} value={form.whySwitch} onChange={(e) => update("whySwitch", e.target.value)} maxLength={400}
+                  aria-invalid={!!fieldErrors.whySwitch}
+                  className={fieldErrors.whySwitch ? "border-destructive focus-visible:ring-destructive" : ""} />
               </Field>
             </div>
           )}
@@ -268,7 +276,7 @@ function ApplyPage() {
           {step === 3 && (
             <div className="space-y-5">
               <SectionHead n={4} title="Current Actions" />
-              <Field label="8. What have you already done?" hint="Select all that apply" required>
+              <Field label="8. What have you already done?" hint="Select all that apply" required error={fieldErrors.doneSoFar}>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {DONE_OPTIONS.map((opt) => (
                     <label key={opt} className="flex cursor-pointer items-center gap-3 rounded-lg border border-border bg-background p-3 hover:border-primary/50">
@@ -278,7 +286,7 @@ function ApplyPage() {
                   ))}
                 </div>
               </Field>
-              <Field label="9. What is your biggest bottleneck right now?" required>
+              <Field label="9. What is your biggest bottleneck right now?" required error={fieldErrors.bottleneck}>
                 <RadioGroup value={form.bottleneck} onValueChange={(v) => update("bottleneck", v)} className="grid gap-2 sm:grid-cols-2">
                   {BOTTLENECKS.map((b) => (
                     <label key={b} className="flex cursor-pointer items-center gap-3 rounded-lg border border-border bg-background p-3 hover:border-primary/50">
