@@ -89,36 +89,11 @@ function ApplyPage() {
         : [...form.doneSoFar, opt]
     );
 
-  const validateStep = (s: number): string | null => {
-    switch (s) {
-      case 0:
-        if (!form.fullName.trim()) return "Please enter your Full Name";
-        if (!form.phone.trim()) return "Please enter your Phone Number";
-        return null;
-      case 1:
-        if (!form.stage) return "Please select your current stage";
-        if (!form.ideaSentence.trim()) return "Please describe your idea in one sentence";
-        if (!form.buildingWhat.trim()) return "Please describe what you're building";
-        return null;
-      case 2:
-        if (!form.targetCustomer.trim()) return "Please describe your target customer";
-        if (!form.problem.trim()) return "Please describe the problem you're solving";
-        if (!form.currentSolutions.trim()) return "Please describe current solutions";
-        if (!form.whySwitch.trim()) return "Please describe why people would switch";
-        return null;
-      case 3:
-        if (form.doneSoFar.length === 0) return "Select at least one option in 'What have you already done?'";
-        if (!form.bottleneck) return "Please select your biggest bottleneck";
-        return null;
-      case 4:
-        if (!form.hoursWeekly) return "Please choose your weekly hours";
-        if (!form.outcome.trim()) return "Please describe your target outcome";
-        return null;
-      case 5:
-        if (!form.agreed) return "You must agree to the commitment to proceed";
-        return null;
-    }
-    return null;
+  const validateCurrent = (): string | null => {
+    const result = validateStep(step, form as unknown as Record<string, unknown>);
+    if (result.ok) return null;
+    // Return first error message
+    return Object.values(result.errors)[0] ?? "Please fix the highlighted fields";
   };
 
   const next = () => {
