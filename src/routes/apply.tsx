@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
 import { PerpexLogo } from "@/components/PerpexLogo";
 import { addSubmission } from "@/lib/storage";
+import { validateStep as zodValidateStep } from "@/lib/validation";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { ChevronLeft, ChevronRight, Loader2, Send } from "lucide-react";
@@ -89,15 +90,20 @@ function ApplyPage() {
         : [...form.doneSoFar, opt]
     );
 
-  const validateCurrent = (): string | null => {
-    const result = validateStep(step, form as unknown as Record<string, unknown>);
-    if (result.ok) return null;
-    // Return first error message
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  const runValidation = (s: number): string | null => {
+    const result = zodValidateStep(s, form as unknown as Record<string, unknown>);
+    if (result.ok) {
+      setFieldErrors({});
+      return null;
+    }
+    setFieldErrors(result.errors);
     return Object.values(result.errors)[0] ?? "Please fix the highlighted fields";
   };
 
   const next = () => {
-    const err = validateStep(step);
+    const err = runValidation(step);
     if (err) {
       toast.error(err);
       return;
@@ -107,19 +113,25 @@ function ApplyPage() {
   };
 
   const back = () => {
+    setFieldErrors({});
     setStep((s) => Math.max(s - 1, 0));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const onSubmit = async () => {
-    const err = validateStep(5);
-    if (err) {
-      toast.error(err);
-      return;
+    // Validate all steps before final submit
+    for (let s = 0; s <= 5; s++) {
+      const err = runValidation(s);
+      if (err) {
+        toast.error(`Step ${s + 1}: ${err}`);
+        setStep(s);
+        return;
+      }
     }
     setSubmitting(true);
     try {
       await addSubmission(form);
+      toast.success("Application submitted successfully!");
       navigate({ to: "/success" });
     } catch (e) {
       console.error(e);
