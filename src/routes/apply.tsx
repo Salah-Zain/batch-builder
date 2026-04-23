@@ -349,7 +349,7 @@ function SectionHead({ n, title }: { n: number; title: string }) {
   );
 }
 
-function Field({ label, hint, required, children }: { label: string; hint?: string; required?: boolean; children: React.ReactNode }) {
+function Field({ label, hint, required, error, children }: { label: string; hint?: string; required?: boolean; error?: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
       <Label className="text-sm font-semibold text-foreground">
@@ -358,6 +358,11 @@ function Field({ label, hint, required, children }: { label: string; hint?: stri
       </Label>
       {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
       {children}
+      {error && (
+        <p className="text-xs font-medium text-destructive" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
