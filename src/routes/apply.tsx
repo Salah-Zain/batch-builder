@@ -302,7 +302,7 @@ function ApplyPage() {
           {step === 4 && (
             <div className="space-y-5">
               <SectionHead n={5} title="Commitment & Outcome" />
-              <Field label="10. How many hours can you dedicate weekly?" required>
+              <Field label="10. How many hours can you dedicate weekly?" required error={fieldErrors.hoursWeekly}>
                 <RadioGroup value={form.hoursWeekly} onValueChange={(v) => update("hoursWeekly", v)} className="grid gap-2 sm:grid-cols-4">
                   {HOURS.map((h) => (
                     <label key={h} className="flex cursor-pointer items-center gap-3 rounded-lg border border-border bg-background p-3 hover:border-primary/50">
@@ -312,8 +312,10 @@ function ApplyPage() {
                   ))}
                 </RadioGroup>
               </Field>
-              <Field label="11. By the end of this BYOB batch, clearly describe what you aim to achieve." hint="Be specific — revenue, customers, launch, MVP, etc." required>
-                <Textarea rows={3} value={form.outcome} onChange={(e) => update("outcome", e.target.value)} maxLength={600} />
+              <Field label="11. By the end of this BYOB batch, clearly describe what you aim to achieve." hint="Be specific — revenue, customers, launch, MVP, etc." required error={fieldErrors.outcome}>
+                <Textarea rows={3} value={form.outcome} onChange={(e) => update("outcome", e.target.value)} maxLength={600}
+                  aria-invalid={!!fieldErrors.outcome}
+                  className={fieldErrors.outcome ? "border-destructive focus-visible:ring-destructive" : ""} />
               </Field>
             </div>
           )}
