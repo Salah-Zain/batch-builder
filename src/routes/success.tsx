@@ -15,17 +15,22 @@ export const Route = createFileRoute("/success")({
 
 function SuccessPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--gradient-soft)] px-6 py-16">
-      <div className="w-full max-w-xl rounded-3xl border border-border bg-card p-10 text-center shadow-[var(--shadow-elegant)]">
-        <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-2xl bg-primary/5 ring-1 ring-primary/20">
-          <img src={logo} alt="PerpeX logo" className="h-16 w-16 object-contain" />
+    <div className="flex min-h-screen items-center justify-center px-6 py-16 relative overflow-hidden">
+      {/* Animated Background Orbs */}
+      <div className="bg-orb bg-orb-1" />
+      <div className="bg-orb bg-orb-2" />
+      <div className="bg-orb bg-orb-3" />
+
+      <div className="w-full max-w-xl rounded-3xl border border-border/50 bg-card/50 backdrop-blur-md p-10 text-center shadow-[var(--shadow-elegant)] relative z-10 animate-in fade-in zoom-in-95 duration-700">
+        <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-2xl bg-blue-50 ring-2 ring-blue-100 shadow-inner">
+          <img src={logo} alt="PerpeX logo" className="h-14 w-14 object-contain" />
         </div>
 
-        <div className="mx-auto mb-4 inline-flex items-center gap-2 rounded-full bg-primary/10 px-3 py-1 text-xs font-semibold uppercase tracking-wider text-primary">
+        <div className="mx-auto mb-4 inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-700">
           <CheckCircle2 className="h-4 w-4" /> Submitted
         </div>
 
-        <h1 className="text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">
+        <h1 className="text-3xl font-black tracking-tight text-foreground md:text-4xl">
           You're in the pipeline 🚀
         </h1>
 

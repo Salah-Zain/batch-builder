@@ -86,7 +86,7 @@
   --input: oklch(0.92 0.015 255);
   --ring: oklch(0.42 0.17 262);
   --gradient-primary: linear-gradient(135deg, oklch(0.25 0.13 264), oklch(0.42 0.17 262));
-  --gradient-soft: linear-gradient(180deg, oklch(0.99 0.01 255), oklch(0.96 0.025 255));
+  --gradient-soft: linear-gradient(135deg, oklch(0.98 0.02 255), oklch(0.95 0.04 255), oklch(0.98 0.02 255));
   --shadow-elegant: 0 20px 50px -20px oklch(0.25 0.13 264 / 0.25);
   --shadow-card: 0 4px 20px -4px oklch(0.25 0.13 264 / 0.1);
   --chart-1: oklch(0.646 0.222 41.116);
@@ -145,7 +145,78 @@
   }
 
   body {
-    background-color: var(--color-background);
+    background: var(--gradient-soft);
+    background-size: 400% 400%;
     color: var(--color-foreground);
+    animation: gradient-move 15s ease infinite;
   }
+}
+
+/* ── Premium Background Animations ── */
+@keyframes gradient-move {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+@keyframes float-slow {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(30px, -20px) scale(1.05); }
+  50% { transform: translate(-20px, 15px) scale(0.95); }
+  75% { transform: translate(15px, 25px) scale(1.02); }
+}
+
+@keyframes float-reverse {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  25% { transform: translate(-25px, 20px) scale(0.97); }
+  50% { transform: translate(20px, -15px) scale(1.04); }
+  75% { transform: translate(-10px, -25px) scale(0.98); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.4; }
+  50% { opacity: 0.7; }
+}
+
+@keyframes shimmer {
+  0% { background-position: -200% 0; }
+  100% { background-position: 200% 0; }
+}
+
+/* Reusable animated background orbs — add to any page container */
+.bg-orb {
+  position: absolute;
+  border-radius: 9999px;
+  pointer-events: none;
+  will-change: transform, opacity;
+}
+.bg-orb-1 {
+  top: -12%;
+  left: -8%;
+  width: 45%;
+  height: 45%;
+  background: var(--primary);
+  opacity: 0.07;
+  filter: blur(120px);
+  animation: float-slow 20s ease-in-out infinite, pulse-glow 8s ease-in-out infinite;
+}
+.bg-orb-2 {
+  bottom: -12%;
+  right: -8%;
+  width: 40%;
+  height: 40%;
+  background: var(--primary-glow);
+  opacity: 0.06;
+  filter: blur(120px);
+  animation: float-reverse 18s ease-in-out infinite, pulse-glow 10s ease-in-out infinite;
+}
+.bg-orb-3 {
+  top: 30%;
+  right: 5%;
+  width: 25%;
+  height: 25%;
+  background: var(--primary);
+  opacity: 0.04;
+  filter: blur(100px);
+  animation: float-slow 15s ease-in-out infinite reverse;
 }

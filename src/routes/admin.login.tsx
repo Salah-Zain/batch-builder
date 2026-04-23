@@ -38,17 +38,22 @@ function AdminLogin() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--gradient-soft)] px-6">
+    <div className="flex min-h-screen items-center justify-center bg-[var(--gradient-soft)] px-6 relative overflow-hidden">
       <Toaster richColors position="top-center" />
-      <div className="w-full max-w-md rounded-2xl border border-border bg-card p-8 shadow-[var(--shadow-elegant)]">
+      {/* Animated Background Orbs */}
+      <div className="bg-orb bg-orb-1" />
+      <div className="bg-orb bg-orb-2" />
+      <div className="bg-orb bg-orb-3" />
+
+      <div className="w-full max-w-md rounded-3xl border border-border/50 bg-card/50 backdrop-blur-md p-8 shadow-[var(--shadow-elegant)] relative z-10 animate-in fade-in zoom-in-95 duration-700">
         <div className="mb-6 flex justify-center">
           <PerpexLogo />
         </div>
         <div className="mb-6 text-center">
-          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+          <div className="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-primary/10">
             <Lock className="h-5 w-5 text-primary" />
           </div>
-          <h1 className="text-2xl font-bold text-foreground">Admin Access</h1>
+          <h1 className="text-2xl font-black text-foreground">Admin Access</h1>
           <p className="mt-1 text-sm text-muted-foreground">Sign in to view submissions</p>
         </div>
         <form onSubmit={onSubmit} className="space-y-4">

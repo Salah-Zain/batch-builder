@@ -161,8 +161,11 @@ function AdminDashboard() {
 
   if (guardState === "checking") {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--gradient-soft)]">
-        <div className="flex flex-col items-center gap-4">
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--gradient-soft)] relative overflow-hidden">
+        <div className="bg-orb bg-orb-1" />
+        <div className="bg-orb bg-orb-2" />
+        <div className="bg-orb bg-orb-3" />
+        <div className="flex flex-col items-center gap-4 relative z-10 animate-in fade-in duration-500">
           <div className="relative">
             <div className="absolute inset-0 animate-ping rounded-full bg-primary/20" />
             <PerpexLogo />
@@ -177,9 +180,14 @@ function AdminDashboard() {
   }
 
   return (
-    <div className="min-h-screen bg-[var(--gradient-soft)]">
+    <div className="min-h-screen bg-[var(--gradient-soft)] relative overflow-hidden">
       <Toaster richColors position="top-center" />
-      <header className="sticky top-0 z-30 border-b border-border/60 bg-background/90 backdrop-blur">
+      {/* Animated Background Orbs */}
+      <div className="bg-orb bg-orb-1" />
+      <div className="bg-orb bg-orb-2" />
+      <div className="bg-orb bg-orb-3" />
+
+      <header className="sticky top-0 z-30 border-b border-border/40 bg-background/70 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
           <div className="flex items-center gap-3">
             <PerpexLogo />
@@ -193,10 +201,10 @@ function AdminDashboard() {
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-6 py-8">
+      <main className="mx-auto max-w-7xl px-6 py-8 relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
         <div className="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <h1 className="text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">Dashboard</h1>
+            <h1 className="text-3xl font-black tracking-tight text-foreground md:text-4xl">Dashboard</h1>
             <p className="mt-1 text-muted-foreground">All BYOB Gamma Batch submissions in one place.</p>
           </div>
           <div className="flex flex-col items-end gap-2">
@@ -225,7 +233,7 @@ function AdminDashboard() {
           <StatCard icon={TrendingUp} label="Already Getting Customers" value={stats.withCustomers} />
         </div>
 
-        <div className="rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]">
+        <div className="rounded-3xl border border-border/50 bg-card/50 backdrop-blur-md shadow-[var(--shadow-card)]">
           <div className="flex flex-col gap-3 border-b border-border p-5">
             <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
               <div>
@@ -354,15 +362,15 @@ function StatCard({
   icon: Icon, label, value,
 }: { icon: React.ComponentType<{ className?: string }>; label: string; value: number }) {
   return (
-    <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
-      <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br from-primary to-primary-glow opacity-10" />
+    <div className="group relative overflow-hidden rounded-3xl border border-border/50 bg-card/50 backdrop-blur-md p-5 shadow-[var(--shadow-card)] transition-all hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5">
+      <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br from-primary to-primary-glow opacity-10 transition-opacity group-hover:opacity-20" />
       <div className="flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
-          <Icon className="h-5 w-5 text-primary" />
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
+          <Icon className="h-5 w-5" />
         </div>
-        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">{label}</p>
+        <p className="text-xs font-bold uppercase tracking-wider text-muted-foreground">{label}</p>
       </div>
-      <p className="mt-4 text-4xl font-extrabold tracking-tight text-foreground">{value}</p>
+      <p className="mt-4 text-4xl font-black tracking-tight text-foreground">{value}</p>
     </div>
   );
 }

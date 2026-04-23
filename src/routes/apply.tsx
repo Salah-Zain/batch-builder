@@ -55,12 +55,44 @@ const STEP_TITLES = [
   "Acknowledgement",
 ];
 
+const STORAGE_KEY = "perpex_apply_form_v1";
+
 function ApplyPage() {
   const navigate = useNavigate();
   const [logoClicks, setLogoClicks] = useState(0);
   const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const [step, setStep] = useState(0);
   const [submitting, setSubmitting] = useState(false);
+
+  // Initialize state from localStorage if available
+  const [step, setStep] = useState(() => {
+    const saved = localStorage.getItem(`${STORAGE_KEY}_step`);
+    return saved ? parseInt(saved, 10) : 0;
+  });
+
+  const [form, setForm] = useState<FormState>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch (e) {
+        console.error("Failed to parse saved form", e);
+      }
+    }
+    return {
+      fullName: "", phone: "", stage: "", ideaSentence: "", buildingWhat: "",
+      targetCustomer: "", problem: "", currentSolutions: "", whySwitch: "",
+      doneSoFar: [], bottleneck: "", hoursWeekly: "", outcome: "", agreed: false,
+    };
+  });
+
+  // Save to localStorage on change
+  useEffect(() => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(form));
+  }, [form]);
+
+  useEffect(() => {
+    localStorage.setItem(`${STORAGE_KEY}_step`, step.toString());
+  }, [step]);
 
   const handleLogoClick = () => {
     const next = logoClicks + 1;
@@ -72,12 +104,6 @@ function ApplyPage() {
       navigate({ to: "/admin/login" });
     }
   };
-
-  const [form, setForm] = useState<FormState>({
-    fullName: "", phone: "", stage: "", ideaSentence: "", buildingWhat: "",
-    targetCustomer: "", problem: "", currentSolutions: "", whySwitch: "",
-    doneSoFar: [], bottleneck: "", hoursWeekly: "", outcome: "", agreed: false,
-  });
 
   const update = <K extends keyof FormState>(k: K, v: FormState[K]) =>
     setForm((f) => ({ ...f, [k]: v }));
@@ -158,6 +184,9 @@ function ApplyPage() {
     setSubmitting(true);
     try {
       await addSubmission(form);
+      // Clear persistence on success
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem(`${STORAGE_KEY}_step`);
       toast.success("Application submitted successfully!");
       navigate({ to: "/success" });
     } catch (e) {
@@ -173,49 +202,54 @@ function ApplyPage() {
   const isLast = step === STEP_TITLES.length - 1;
 
   return (
-    <div className="min-h-screen bg-[var(--gradient-soft)] text-foreground">
+    <div className="min-h-screen flex flex-col items-center justify-center text-foreground relative overflow-hidden px-6 py-12">
       <Toaster richColors position="top-center" />
-      <header className="sticky top-0 z-30 border-b border-border/60 bg-background/90 backdrop-blur">
-        <div className="mx-auto flex max-w-4xl items-center justify-between px-6 py-3">
-          <PerpexLogo onClick={handleLogoClick} />
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/"><ChevronLeft className="h-4 w-4" /> Back</Link>
-          </Button>
-        </div>
-      </header>
 
-      <main className="mx-auto max-w-3xl px-6 py-10">
-        <div className="mb-6">
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary">Gamma Batch · Pre-Batch Alignment</p>
-          <h1 className="mt-2 text-3xl font-extrabold tracking-tight md:text-4xl">Application Form</h1>
-        </div>
+      {/* Animated Background Orbs */}
+      <div className="bg-orb bg-orb-1" />
+      <div className="bg-orb bg-orb-2" />
+      <div className="bg-orb bg-orb-3" />
 
-        {/* Progress */}
-        <div className="mb-8 rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
-          <div className="mb-3 flex items-center justify-between">
-            <div>
-              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                Step {step + 1} of {STEP_TITLES.length}
-              </p>
-              <p className="text-base font-bold text-foreground">{STEP_TITLES[step]}</p>
+      <main className="w-full max-w-3xl relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        {/* <div className="mb-10 text-center">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Gamma Batch · Pre-Batch Alignment</p>
+          <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">Application Form</h1>
+        </div> */}
+
+        {/* Progress Card */}
+        <div className="group mb-12 rounded-3xl border border-border/50 bg-card/50 backdrop-blur-md p-8 shadow-[var(--shadow-card)] transition-all hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5">
+          <div className="mb-6 flex items-center gap-5">
+            <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary text-2xl font-black text-primary-foreground shadow-lg shadow-primary/20">
+              {step + 1}
             </div>
-            {/* <p className="text-sm font-bold text-primary">{Math.round(progress)}%</p> */}
+            <div className="space-y-1">
+              <div className="flex items-center gap-3">
+                <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
+                  Step {step + 1} of {STEP_TITLES.length}
+                </p>
+                <span className="h-1 w-1 rounded-full bg-muted" />
+                <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
+                  {Math.round(progress)}% Complete
+                </p>
+              </div>
+              <p className="text-xl font-black text-foreground">{STEP_TITLES[step]}</p>
+            </div>
           </div>
-          <Progress value={progress} className="h-2" />
-          <div className="mt-3 hidden gap-1 sm:flex">
-            {STEP_TITLES.map((_, i) => (
-              <div
-                key={i}
-                className={`h-1.5 flex-1 rounded-full transition-colors ${i <= step ? "bg-primary" : "bg-muted"}`}
-              />
-            ))}
+
+          <div className="relative h-2 w-full overflow-hidden rounded-full bg-muted">
+            <div
+              className="h-full bg-primary transition-all duration-500 ease-out"
+              style={{ width: `${progress}%` }}
+            />
           </div>
         </div>
 
-        <section className="rounded-2xl border border-border bg-card p-6 shadow-[var(--shadow-card)] sm:p-8">
+        <section
+          key={step}
+          className="group min-h-[320px] rounded-3xl border border-border/50 bg-card/50 backdrop-blur-md p-8 shadow-[var(--shadow-card)] transition-all hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 animate-in zoom-in-95 slide-in-from-bottom-2 duration-500"
+        >
           {step === 0 && (
             <div className="space-y-5">
-              <SectionHead n={1} title="Basic Details" />
               <Field label="Full Name" required error={fieldErrors.fullName}>
                 <Input
                   value={form.fullName}
@@ -246,7 +280,6 @@ function ApplyPage() {
 
           {step === 1 && (
             <div className="space-y-5">
-              <SectionHead n={2} title="Your Starting Point" />
               <Field label="1. Which stage are you currently in?" required error={fieldErrors.stage}>
                 <RadioGroup value={form.stage} onValueChange={(v) => update("stage", v)} className="grid gap-2 sm:grid-cols-2">
                   {STAGES.map((s) => (
@@ -283,7 +316,6 @@ function ApplyPage() {
 
           {step === 2 && (
             <div className="space-y-5">
-              <SectionHead n={3} title="Reality Check" />
               <Field label="4. Who is your exact target customer?" required error={fieldErrors.targetCustomer}>
                 <Textarea rows={2} value={form.targetCustomer} onChange={(e) => update("targetCustomer", e.target.value)}
                   onBlur={() => validateField("targetCustomer")} maxLength={400}
@@ -313,7 +345,6 @@ function ApplyPage() {
 
           {step === 3 && (
             <div className="space-y-5">
-              <SectionHead n={4} title="Current Actions" />
               <Field label="8. What have you already done?" hint="Select all that apply" required error={fieldErrors.doneSoFar}>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {DONE_OPTIONS.map((opt) => (
@@ -339,7 +370,6 @@ function ApplyPage() {
 
           {step === 4 && (
             <div className="space-y-5">
-              <SectionHead n={5} title="Commitment & Outcome" />
               <Field label="10. How many hours can you dedicate weekly?" required error={fieldErrors.hoursWeekly}>
                 <RadioGroup value={form.hoursWeekly} onValueChange={(v) => update("hoursWeekly", v)} className="grid gap-2 sm:grid-cols-4">
                   {HOURS.map((h) => (
@@ -361,7 +391,6 @@ function ApplyPage() {
 
           {step === 5 && (
             <div className="space-y-5">
-              <SectionHead n={6} title="Acknowledgement" />
               <div className="rounded-xl border border-primary/20 bg-primary/5 p-5">
                 <p className="text-sm font-semibold text-foreground">12. I understand that:</p>
                 <ul className="mt-3 space-y-1.5 text-sm text-foreground/80">
@@ -373,7 +402,7 @@ function ApplyPage() {
                 <label className="mt-5 flex cursor-pointer items-start gap-3 rounded-lg border border-border bg-background p-3">
                   <Checkbox checked={form.agreed} onCheckedChange={(v) => update("agreed", Boolean(v))} className="mt-0.5" />
                   <span className="text-sm font-medium text-foreground">
-                    👉 I agree to fully commit to this process.
+                    I agree to fully commit to this process.
                   </span>
                 </label>
                 {fieldErrors.agreed && (
@@ -420,20 +449,20 @@ function ApplyPage() {
 function SectionHead({ n, title }: { n: number; title: string }) {
   return (
     <div className="mb-2 flex items-center gap-3">
-      <span className="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground">
+      <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary text-base font-black text-primary-foreground shadow-lg shadow-primary/20">
         {n}
       </span>
-      <h2 className="text-xl font-bold text-foreground">{title}</h2>
+      <h2 className="text-xl font-black tracking-tight text-foreground/80">{title}</h2>
     </div>
   );
 }
 
 function Field({ label, hint, required, error, children }: { label: string; hint?: string; required?: boolean; error?: string; children: React.ReactNode }) {
   return (
-    <div className="space-y-2">
-      <Label className="text-sm font-semibold text-foreground">
+    <div className="space-y-2.5">
+      <Label className="text-[13px] font-extrabold uppercase tracking-wide text-foreground/60">
         {label}
-        {required && <span className="ml-1 text-destructive font-bold">*</span>}
+        {required && <span className="ml-1 text-destructive font-black">*</span>}
       </Label>
       {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
       {children}
