@@ -41,30 +41,32 @@ const BOTTLENECKS = ["Clarity", "Taking action", "Sales / getting customers", "C
 
 function AdminDashboard() {
   const navigate = useNavigate();
+  const { state: guardState } = useAdminGuard();
   const [list, setList] = useState<Submission[]>([]);
   const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
   const [stageFilter, setStageFilter] = useState<string>("all");
   const [bottleneckFilter, setBottleneckFilter] = useState<string>("all");
   const [active, setActive] = useState<Submission | null>(null);
+  const [exporting, setExporting] = useState(false);
+  const [exportProgress, setExportProgress] = useState(0);
 
   useEffect(() => {
+    if (guardState !== "authorized") return;
     let mounted = true;
     (async () => {
-      const ok = await isAdminLoggedIn();
-      if (!ok) {
-        navigate({ to: "/admin/login" });
-        return;
-      }
       try {
         const data = await getSubmissions();
         if (mounted) setList(data);
+      } catch (e) {
+        console.error(e);
+        toast.error("Failed to load submissions");
       } finally {
         if (mounted) setLoading(false);
       }
     })();
     return () => { mounted = false; };
-  }, [navigate]);
+  }, [guardState]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
