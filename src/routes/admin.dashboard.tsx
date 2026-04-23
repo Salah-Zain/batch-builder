@@ -3,13 +3,20 @@ import { useEffect, useMemo, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { PerpexLogo } from "@/components/PerpexLogo";
-import { getSubmissions, isAdminLoggedIn, setAdminSession, type Submission } from "@/lib/storage";
+import { adminLogout, getSubmissions, isAdminLoggedIn, type Submission } from "@/lib/storage";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Table,
   TableBody,
@@ -18,38 +25,58 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Users, CheckCircle2, Clock, TrendingUp, Search, LogOut, Eye } from "lucide-react";
+import { Users, CheckCircle2, Clock, TrendingUp, Search, LogOut, Eye, Download, Loader2, X } from "lucide-react";
 
 export const Route = createFileRoute("/admin/dashboard")({
   head: () => ({ meta: [{ title: "Admin Dashboard — PerpeX" }] }),
   component: AdminDashboard,
 });
 
+const STAGES = ["Just an idea", "Started but inconsistent", "Actively working", "Already getting customers"];
+const BOTTLENECKS = ["Clarity", "Taking action", "Sales / getting customers", "Confidence", "Consistency"];
+
 function AdminDashboard() {
   const navigate = useNavigate();
   const [list, setList] = useState<Submission[]>([]);
+  const [loading, setLoading] = useState(true);
   const [query, setQuery] = useState("");
+  const [stageFilter, setStageFilter] = useState<string>("all");
+  const [bottleneckFilter, setBottleneckFilter] = useState<string>("all");
   const [active, setActive] = useState<Submission | null>(null);
 
   useEffect(() => {
-    if (!isAdminLoggedIn()) {
-      navigate({ to: "/admin/login" });
-      return;
-    }
-    setList(getSubmissions());
+    let mounted = true;
+    (async () => {
+      const ok = await isAdminLoggedIn();
+      if (!ok) {
+        navigate({ to: "/admin/login" });
+        return;
+      }
+      try {
+        const data = await getSubmissions();
+        if (mounted) setList(data);
+      } finally {
+        if (mounted) setLoading(false);
+      }
+    })();
+    return () => { mounted = false; };
   }, [navigate]);
 
   const filtered = useMemo(() => {
     const q = query.trim().toLowerCase();
-    if (!q) return list;
-    return list.filter(
-      (s) =>
+    return list.filter((s) => {
+      if (stageFilter !== "all" && s.stage !== stageFilter) return false;
+      if (bottleneckFilter !== "all" && s.bottleneck !== bottleneckFilter) return false;
+      if (!q) return true;
+      return (
         s.fullName.toLowerCase().includes(q) ||
         s.phone.toLowerCase().includes(q) ||
         s.stage.toLowerCase().includes(q) ||
-        s.bottleneck.toLowerCase().includes(q)
-    );
-  }, [list, query]);
+        s.bottleneck.toLowerCase().includes(q) ||
+        s.ideaSentence.toLowerCase().includes(q)
+      );
+    });
+  }, [list, query, stageFilter, bottleneckFilter]);
 
   const stats = useMemo(() => {
     const total = list.length;
@@ -60,10 +87,42 @@ function AdminDashboard() {
     return { total, committed, withCustomers, todayCount };
   }, [list]);
 
-  const logout = () => {
-    setAdminSession(false);
+  const logout = async () => {
+    await adminLogout();
     navigate({ to: "/" });
   };
+
+  const exportCSV = () => {
+    const headers = [
+      "Submitted At", "Full Name", "Phone", "Stage", "Idea (one sentence)",
+      "What they're building", "Target Customer", "Problem", "Current Solutions",
+      "Why Switch", "Done So Far", "Bottleneck", "Hours Weekly", "Outcome", "Agreed",
+    ];
+    const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+    const rows = filtered.map((s) => [
+      new Date(s.submittedAt).toISOString(),
+      s.fullName, s.phone, s.stage, s.ideaSentence, s.buildingWhat,
+      s.targetCustomer, s.problem, s.currentSolutions, s.whySwitch,
+      s.doneSoFar.join("; "), s.bottleneck, s.hoursWeekly, s.outcome,
+      s.agreed ? "Yes" : "No",
+    ].map((v) => escape(String(v ?? ""))).join(","));
+    const csv = [headers.map(escape).join(","), ...rows].join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `perpex-submissions-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const clearFilters = () => {
+    setQuery("");
+    setStageFilter("all");
+    setBottleneckFilter("all");
+  };
+
+  const filtersActive = query || stageFilter !== "all" || bottleneckFilter !== "all";
 
   return (
     <div className="min-h-screen bg-[var(--gradient-soft)]">
@@ -82,32 +141,64 @@ function AdminDashboard() {
       </header>
 
       <main className="mx-auto max-w-7xl px-6 py-8">
-        <div className="mb-8">
-          <h1 className="text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">Dashboard</h1>
-          <p className="mt-1 text-muted-foreground">All BYOB Gamma Batch submissions in one place.</p>
+        <div className="mb-8 flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+          <div>
+            <h1 className="text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">Dashboard</h1>
+            <p className="mt-1 text-muted-foreground">All BYOB Gamma Batch submissions in one place.</p>
+          </div>
+          <Button variant="hero" onClick={exportCSV} disabled={filtered.length === 0}>
+            <Download className="h-4 w-4" /> Export CSV ({filtered.length})
+          </Button>
         </div>
 
         <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-          <StatCard icon={Users} label="Total Applications" value={stats.total} accent="from-primary to-primary-glow" />
-          <StatCard icon={Clock} label="Submitted Today" value={stats.todayCount} accent="from-primary-glow to-primary" />
-          <StatCard icon={CheckCircle2} label="High Commitment (10+ hrs)" value={stats.committed} accent="from-primary to-primary-glow" />
-          <StatCard icon={TrendingUp} label="Already Getting Customers" value={stats.withCustomers} accent="from-primary-glow to-primary" />
+          <StatCard icon={Users} label="Total Applications" value={stats.total} />
+          <StatCard icon={Clock} label="Submitted Today" value={stats.todayCount} />
+          <StatCard icon={CheckCircle2} label="High Commitment (10+ hrs)" value={stats.committed} />
+          <StatCard icon={TrendingUp} label="Already Getting Customers" value={stats.withCustomers} />
         </div>
 
         <div className="rounded-2xl border border-border bg-card shadow-[var(--shadow-card)]">
-          <div className="flex flex-col items-stretch justify-between gap-3 border-b border-border p-5 sm:flex-row sm:items-center">
-            <div>
-              <h2 className="text-lg font-bold text-foreground">Submissions</h2>
-              <p className="text-xs text-muted-foreground">{filtered.length} of {list.length} shown</p>
+          <div className="flex flex-col gap-3 border-b border-border p-5">
+            <div className="flex flex-col items-stretch justify-between gap-3 sm:flex-row sm:items-center">
+              <div>
+                <h2 className="text-lg font-bold text-foreground">Submissions</h2>
+                <p className="text-xs text-muted-foreground">{filtered.length} of {list.length} shown</p>
+              </div>
+              <div className="relative w-full sm:w-72">
+                <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  placeholder="Search name, phone, idea…"
+                  className="pl-9"
+                  value={query}
+                  onChange={(e) => setQuery(e.target.value)}
+                />
+              </div>
             </div>
-            <div className="relative w-full sm:w-72">
-              <Search className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
-              <Input
-                placeholder="Search by name, phone, stage…"
-                className="pl-9"
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-              />
+            <div className="flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+              <Select value={stageFilter} onValueChange={setStageFilter}>
+                <SelectTrigger className="w-full sm:w-56">
+                  <SelectValue placeholder="Filter by stage" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All stages</SelectItem>
+                  {STAGES.map((s) => <SelectItem key={s} value={s}>{s}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              <Select value={bottleneckFilter} onValueChange={setBottleneckFilter}>
+                <SelectTrigger className="w-full sm:w-56">
+                  <SelectValue placeholder="Filter by bottleneck" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">All bottlenecks</SelectItem>
+                  {BOTTLENECKS.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+                </SelectContent>
+              </Select>
+              {filtersActive && (
+                <Button variant="ghost" size="sm" onClick={clearFilters}>
+                  <X className="h-4 w-4" /> Clear
+                </Button>
+              )}
             </div>
           </div>
 
@@ -125,10 +216,16 @@ function AdminDashboard() {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filtered.length === 0 ? (
+                {loading ? (
                   <TableRow>
                     <TableCell colSpan={7} className="py-16 text-center text-muted-foreground">
-                      {list.length === 0 ? "No applications submitted yet." : "No results match your search."}
+                      <Loader2 className="mx-auto h-5 w-5 animate-spin" />
+                    </TableCell>
+                  </TableRow>
+                ) : filtered.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="py-16 text-center text-muted-foreground">
+                      {list.length === 0 ? "No applications submitted yet." : "No results match your filters."}
                     </TableCell>
                   </TableRow>
                 ) : (
@@ -187,11 +284,11 @@ function AdminDashboard() {
 }
 
 function StatCard({
-  icon: Icon, label, value, accent,
-}: { icon: React.ComponentType<{ className?: string }>; label: string; value: number; accent: string }) {
+  icon: Icon, label, value,
+}: { icon: React.ComponentType<{ className?: string }>; label: string; value: number }) {
   return (
     <div className="relative overflow-hidden rounded-2xl border border-border bg-card p-5 shadow-[var(--shadow-card)]">
-      <div className={`absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br ${accent} opacity-10`} />
+      <div className="absolute -right-6 -top-6 h-24 w-24 rounded-full bg-gradient-to-br from-primary to-primary-glow opacity-10" />
       <div className="flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-lg bg-primary/10">
           <Icon className="h-5 w-5 text-primary" />
