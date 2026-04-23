@@ -9,6 +9,7 @@ import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Progress } from "@/components/ui/progress";
 import { PerpexLogo } from "@/components/PerpexLogo";
 import { addSubmission } from "@/lib/storage";
+import { validateStep as zodValidateStep } from "@/lib/validation";
 import { toast } from "sonner";
 import { Toaster } from "@/components/ui/sonner";
 import { ChevronLeft, ChevronRight, Loader2, Send } from "lucide-react";
@@ -89,40 +90,20 @@ function ApplyPage() {
         : [...form.doneSoFar, opt]
     );
 
-  const validateStep = (s: number): string | null => {
-    switch (s) {
-      case 0:
-        if (!form.fullName.trim()) return "Please enter your Full Name";
-        if (!form.phone.trim()) return "Please enter your Phone Number";
-        return null;
-      case 1:
-        if (!form.stage) return "Please select your current stage";
-        if (!form.ideaSentence.trim()) return "Please describe your idea in one sentence";
-        if (!form.buildingWhat.trim()) return "Please describe what you're building";
-        return null;
-      case 2:
-        if (!form.targetCustomer.trim()) return "Please describe your target customer";
-        if (!form.problem.trim()) return "Please describe the problem you're solving";
-        if (!form.currentSolutions.trim()) return "Please describe current solutions";
-        if (!form.whySwitch.trim()) return "Please describe why people would switch";
-        return null;
-      case 3:
-        if (form.doneSoFar.length === 0) return "Select at least one option in 'What have you already done?'";
-        if (!form.bottleneck) return "Please select your biggest bottleneck";
-        return null;
-      case 4:
-        if (!form.hoursWeekly) return "Please choose your weekly hours";
-        if (!form.outcome.trim()) return "Please describe your target outcome";
-        return null;
-      case 5:
-        if (!form.agreed) return "You must agree to the commitment to proceed";
-        return null;
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
+  const runValidation = (s: number): string | null => {
+    const result = zodValidateStep(s, form as unknown as Record<string, unknown>);
+    if (result.ok) {
+      setFieldErrors({});
+      return null;
     }
-    return null;
+    setFieldErrors(result.errors);
+    return Object.values(result.errors)[0] ?? "Please fix the highlighted fields";
   };
 
   const next = () => {
-    const err = validateStep(step);
+    const err = runValidation(step);
     if (err) {
       toast.error(err);
       return;
@@ -132,19 +113,25 @@ function ApplyPage() {
   };
 
   const back = () => {
+    setFieldErrors({});
     setStep((s) => Math.max(s - 1, 0));
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const onSubmit = async () => {
-    const err = validateStep(5);
-    if (err) {
-      toast.error(err);
-      return;
+    // Validate all steps before final submit
+    for (let s = 0; s <= 5; s++) {
+      const err = runValidation(s);
+      if (err) {
+        toast.error(`Step ${s + 1}: ${err}`);
+        setStep(s);
+        return;
+      }
     }
     setSubmitting(true);
     try {
       await addSubmission(form);
+      toast.success("Application submitted successfully!");
       navigate({ to: "/success" });
     } catch (e) {
       console.error(e);
@@ -202,11 +189,25 @@ function ApplyPage() {
           {step === 0 && (
             <div className="space-y-5">
               <SectionHead n={1} title="Basic Details" />
-              <Field label="Full Name" required>
-                <Input value={form.fullName} onChange={(e) => update("fullName", e.target.value)} placeholder="Your full name" />
+              <Field label="Full Name" required error={fieldErrors.fullName}>
+                <Input
+                  value={form.fullName}
+                  onChange={(e) => update("fullName", e.target.value)}
+                  placeholder="Your full name"
+                  aria-invalid={!!fieldErrors.fullName}
+                  className={fieldErrors.fullName ? "border-destructive focus-visible:ring-destructive" : ""}
+                />
               </Field>
-              <Field label="Phone Number" required>
-                <Input type="tel" value={form.phone} onChange={(e) => update("phone", e.target.value)} placeholder="+91 ..." />
+              <Field label="Phone Number" required hint="Include country code (e.g. +91 98765 43210)" error={fieldErrors.phone}>
+                <Input
+                  type="tel"
+                  inputMode="tel"
+                  value={form.phone}
+                  onChange={(e) => update("phone", e.target.value)}
+                  placeholder="+91 98765 43210"
+                  aria-invalid={!!fieldErrors.phone}
+                  className={fieldErrors.phone ? "border-destructive focus-visible:ring-destructive" : ""}
+                />
               </Field>
             </div>
           )}
@@ -214,7 +215,7 @@ function ApplyPage() {
           {step === 1 && (
             <div className="space-y-5">
               <SectionHead n={2} title="Your Starting Point" />
-              <Field label="1. Which stage are you currently in?" required>
+              <Field label="1. Which stage are you currently in?" required error={fieldErrors.stage}>
                 <RadioGroup value={form.stage} onValueChange={(v) => update("stage", v)} className="grid gap-2 sm:grid-cols-2">
                   {STAGES.map((s) => (
                     <label key={s} className="flex cursor-pointer items-center gap-3 rounded-lg border border-border bg-background p-3 hover:border-primary/50">
@@ -224,11 +225,24 @@ function ApplyPage() {
                   ))}
                 </RadioGroup>
               </Field>
-              <Field label="2. Describe your business / idea in one clear sentence." required>
-                <Input value={form.ideaSentence} onChange={(e) => update("ideaSentence", e.target.value)} maxLength={200} />
+              <Field label="2. Describe your business / idea in one clear sentence." required error={fieldErrors.ideaSentence}>
+                <Input
+                  value={form.ideaSentence}
+                  onChange={(e) => update("ideaSentence", e.target.value)}
+                  maxLength={200}
+                  aria-invalid={!!fieldErrors.ideaSentence}
+                  className={fieldErrors.ideaSentence ? "border-destructive focus-visible:ring-destructive" : ""}
+                />
               </Field>
-              <Field label="3. What exactly are you trying to build?" hint="Be specific — avoid vague answers like 'startup'" required>
-                <Textarea rows={3} value={form.buildingWhat} onChange={(e) => update("buildingWhat", e.target.value)} maxLength={600} />
+              <Field label="3. What exactly are you trying to build?" hint="Be specific — avoid vague answers like 'startup'" required error={fieldErrors.buildingWhat}>
+                <Textarea
+                  rows={3}
+                  value={form.buildingWhat}
+                  onChange={(e) => update("buildingWhat", e.target.value)}
+                  maxLength={600}
+                  aria-invalid={!!fieldErrors.buildingWhat}
+                  className={fieldErrors.buildingWhat ? "border-destructive focus-visible:ring-destructive" : ""}
+                />
               </Field>
             </div>
           )}
@@ -236,17 +250,25 @@ function ApplyPage() {
           {step === 2 && (
             <div className="space-y-5">
               <SectionHead n={3} title="Reality Check" />
-              <Field label="4. Who is your exact target customer?" required>
-                <Textarea rows={2} value={form.targetCustomer} onChange={(e) => update("targetCustomer", e.target.value)} maxLength={400} />
+              <Field label="4. Who is your exact target customer?" required error={fieldErrors.targetCustomer}>
+                <Textarea rows={2} value={form.targetCustomer} onChange={(e) => update("targetCustomer", e.target.value)} maxLength={400}
+                  aria-invalid={!!fieldErrors.targetCustomer}
+                  className={fieldErrors.targetCustomer ? "border-destructive focus-visible:ring-destructive" : ""} />
               </Field>
-              <Field label="5. What real problem are you solving?" required>
-                <Textarea rows={2} value={form.problem} onChange={(e) => update("problem", e.target.value)} maxLength={400} />
+              <Field label="5. What real problem are you solving?" required error={fieldErrors.problem}>
+                <Textarea rows={2} value={form.problem} onChange={(e) => update("problem", e.target.value)} maxLength={400}
+                  aria-invalid={!!fieldErrors.problem}
+                  className={fieldErrors.problem ? "border-destructive focus-visible:ring-destructive" : ""} />
               </Field>
-              <Field label="6. How are people currently solving this problem?" required>
-                <Textarea rows={2} value={form.currentSolutions} onChange={(e) => update("currentSolutions", e.target.value)} maxLength={400} />
+              <Field label="6. How are people currently solving this problem?" required error={fieldErrors.currentSolutions}>
+                <Textarea rows={2} value={form.currentSolutions} onChange={(e) => update("currentSolutions", e.target.value)} maxLength={400}
+                  aria-invalid={!!fieldErrors.currentSolutions}
+                  className={fieldErrors.currentSolutions ? "border-destructive focus-visible:ring-destructive" : ""} />
               </Field>
-              <Field label="7. Why would they switch to you?" required>
-                <Textarea rows={2} value={form.whySwitch} onChange={(e) => update("whySwitch", e.target.value)} maxLength={400} />
+              <Field label="7. Why would they switch to you?" required error={fieldErrors.whySwitch}>
+                <Textarea rows={2} value={form.whySwitch} onChange={(e) => update("whySwitch", e.target.value)} maxLength={400}
+                  aria-invalid={!!fieldErrors.whySwitch}
+                  className={fieldErrors.whySwitch ? "border-destructive focus-visible:ring-destructive" : ""} />
               </Field>
             </div>
           )}
@@ -254,7 +276,7 @@ function ApplyPage() {
           {step === 3 && (
             <div className="space-y-5">
               <SectionHead n={4} title="Current Actions" />
-              <Field label="8. What have you already done?" hint="Select all that apply" required>
+              <Field label="8. What have you already done?" hint="Select all that apply" required error={fieldErrors.doneSoFar}>
                 <div className="grid gap-2 sm:grid-cols-2">
                   {DONE_OPTIONS.map((opt) => (
                     <label key={opt} className="flex cursor-pointer items-center gap-3 rounded-lg border border-border bg-background p-3 hover:border-primary/50">
@@ -264,7 +286,7 @@ function ApplyPage() {
                   ))}
                 </div>
               </Field>
-              <Field label="9. What is your biggest bottleneck right now?" required>
+              <Field label="9. What is your biggest bottleneck right now?" required error={fieldErrors.bottleneck}>
                 <RadioGroup value={form.bottleneck} onValueChange={(v) => update("bottleneck", v)} className="grid gap-2 sm:grid-cols-2">
                   {BOTTLENECKS.map((b) => (
                     <label key={b} className="flex cursor-pointer items-center gap-3 rounded-lg border border-border bg-background p-3 hover:border-primary/50">
@@ -280,7 +302,7 @@ function ApplyPage() {
           {step === 4 && (
             <div className="space-y-5">
               <SectionHead n={5} title="Commitment & Outcome" />
-              <Field label="10. How many hours can you dedicate weekly?" required>
+              <Field label="10. How many hours can you dedicate weekly?" required error={fieldErrors.hoursWeekly}>
                 <RadioGroup value={form.hoursWeekly} onValueChange={(v) => update("hoursWeekly", v)} className="grid gap-2 sm:grid-cols-4">
                   {HOURS.map((h) => (
                     <label key={h} className="flex cursor-pointer items-center gap-3 rounded-lg border border-border bg-background p-3 hover:border-primary/50">
@@ -290,8 +312,10 @@ function ApplyPage() {
                   ))}
                 </RadioGroup>
               </Field>
-              <Field label="11. By the end of this BYOB batch, clearly describe what you aim to achieve." hint="Be specific — revenue, customers, launch, MVP, etc." required>
-                <Textarea rows={3} value={form.outcome} onChange={(e) => update("outcome", e.target.value)} maxLength={600} />
+              <Field label="11. By the end of this BYOB batch, clearly describe what you aim to achieve." hint="Be specific — revenue, customers, launch, MVP, etc." required error={fieldErrors.outcome}>
+                <Textarea rows={3} value={form.outcome} onChange={(e) => update("outcome", e.target.value)} maxLength={600}
+                  aria-invalid={!!fieldErrors.outcome}
+                  className={fieldErrors.outcome ? "border-destructive focus-visible:ring-destructive" : ""} />
               </Field>
             </div>
           )}
@@ -313,6 +337,9 @@ function ApplyPage() {
                     👉 I agree to fully commit to this process.
                   </span>
                 </label>
+                {fieldErrors.agreed && (
+                  <p className="mt-2 text-xs font-medium text-destructive" role="alert">{fieldErrors.agreed}</p>
+                )}
               </div>
             </div>
           )}
@@ -362,7 +389,7 @@ function SectionHead({ n, title }: { n: number; title: string }) {
   );
 }
 
-function Field({ label, hint, required, children }: { label: string; hint?: string; required?: boolean; children: React.ReactNode }) {
+function Field({ label, hint, required, error, children }: { label: string; hint?: string; required?: boolean; error?: string; children: React.ReactNode }) {
   return (
     <div className="space-y-2">
       <Label className="text-sm font-semibold text-foreground">
@@ -371,6 +398,11 @@ function Field({ label, hint, required, children }: { label: string; hint?: stri
       </Label>
       {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
       {children}
+      {error && (
+        <p className="text-xs font-medium text-destructive" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   );
 }
