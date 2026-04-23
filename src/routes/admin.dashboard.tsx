@@ -134,10 +134,14 @@ function AdminDashboard() {
       const url = URL.createObjectURL(blob);
       const a = document.createElement("a");
       a.href = url;
-      a.download = `perpex-submissions-${new Date().toISOString().slice(0, 10)}.csv`;
+      const filename = `perpex-submissions-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.download = filename;
       a.click();
       URL.revokeObjectURL(url);
-      toast.success(`Exported ${total} submission${total === 1 ? "" : "s"} to CSV`, { id: toastId });
+      toast.success(`Exported ${total} row${total === 1 ? "" : "s"} to ${filename}`, { 
+        id: toastId,
+        description: "The download has started successfully."
+      });
     } catch (e) {
       console.error(e);
       toast.error("CSV export failed. Please try again.", { id: toastId });
@@ -155,8 +159,26 @@ function AdminDashboard() {
 
   const filtersActive = query || stageFilter !== "all" || bottleneckFilter !== "all";
 
+  if (guardState === "checking") {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center bg-[var(--gradient-soft)]">
+        <div className="flex flex-col items-center gap-4">
+          <div className="relative">
+            <div className="absolute inset-0 animate-ping rounded-full bg-primary/20" />
+            <PerpexLogo />
+          </div>
+          <div className="flex items-center gap-2 text-sm font-medium text-muted-foreground">
+            <Loader2 className="h-4 w-4 animate-spin text-primary" />
+            Verifying session...
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-[var(--gradient-soft)]">
+      <Toaster richColors position="top-center" />
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/90 backdrop-blur">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-3">
           <div className="flex items-center gap-3">
@@ -177,9 +199,23 @@ function AdminDashboard() {
             <h1 className="text-3xl font-extrabold tracking-tight text-foreground md:text-4xl">Dashboard</h1>
             <p className="mt-1 text-muted-foreground">All BYOB Gamma Batch submissions in one place.</p>
           </div>
-          <Button variant="hero" onClick={exportCSV} disabled={filtered.length === 0}>
-            <Download className="h-4 w-4" /> Export CSV ({filtered.length})
-          </Button>
+          <div className="flex flex-col items-end gap-2">
+            <Button 
+              variant="hero" 
+              onClick={exportCSV} 
+              disabled={filtered.length === 0 || exporting}
+              className="min-w-[160px]"
+            >
+              {exporting ? (
+                <><Loader2 className="h-4 w-4 animate-spin" /> Exporting ({exportProgress}%)</>
+              ) : (
+                <><Download className="h-4 w-4" /> Export CSV ({filtered.length})</>
+              )}
+            </Button>
+            {exporting && (
+              <Progress value={exportProgress} className="h-1 w-full max-w-[160px]" />
+            )}
+          </div>
         </div>
 
         <div className="mb-8 grid gap-4 sm:grid-cols-2 lg:grid-cols-4">

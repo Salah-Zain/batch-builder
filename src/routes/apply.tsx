@@ -102,10 +102,31 @@ function ApplyPage() {
     return Object.values(result.errors)[0] ?? "Please fix the highlighted fields";
   };
 
+  const validateField = (field: keyof FormState) => {
+    // Find which step this field belongs to
+    const result = zodValidateStep(step, form as unknown as Record<string, unknown>);
+    if (!result.ok && result.errors[field]) {
+      setFieldErrors((prev) => ({ ...prev, [field]: result.errors[field] }));
+    } else {
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        delete next[field];
+        return next;
+      });
+    }
+  };
+
   const next = () => {
     const err = runValidation(step);
     if (err) {
       toast.error(err);
+      // Wait a tick for state update then scroll to first error
+      setTimeout(() => {
+        const firstError = document.querySelector('[aria-invalid="true"]');
+        if (firstError) {
+          firstError.scrollIntoView({ behavior: "smooth", block: "center" });
+        }
+      }, 10);
       return;
     }
     setStep((s) => Math.min(s + 1, STEP_TITLES.length - 1));
@@ -125,6 +146,12 @@ function ApplyPage() {
       if (err) {
         toast.error(`Step ${s + 1}: ${err}`);
         setStep(s);
+        setTimeout(() => {
+          const firstError = document.querySelector('[aria-invalid="true"]');
+          if (firstError) {
+            firstError.scrollIntoView({ behavior: "smooth", block: "center" });
+          }
+        }, 10);
         return;
       }
     }
@@ -172,7 +199,7 @@ function ApplyPage() {
               </p>
               <p className="text-base font-bold text-foreground">{STEP_TITLES[step]}</p>
             </div>
-            <p className="text-sm font-bold text-primary">{Math.round(progress)}%</p>
+            {/* <p className="text-sm font-bold text-primary">{Math.round(progress)}%</p> */}
           </div>
           <Progress value={progress} className="h-2" />
           <div className="mt-3 hidden gap-1 sm:flex">
@@ -193,6 +220,7 @@ function ApplyPage() {
                 <Input
                   value={form.fullName}
                   onChange={(e) => update("fullName", e.target.value)}
+                  onBlur={() => validateField("fullName")}
                   placeholder="Your full name"
                   aria-invalid={!!fieldErrors.fullName}
                   className={fieldErrors.fullName ? "border-destructive focus-visible:ring-destructive" : ""}
@@ -203,7 +231,11 @@ function ApplyPage() {
                   type="tel"
                   inputMode="tel"
                   value={form.phone}
-                  onChange={(e) => update("phone", e.target.value)}
+                  onChange={(e) => {
+                    const val = e.target.value.replace(/[^\d+\-\s]/g, "");
+                    update("phone", val);
+                  }}
+                  onBlur={() => validateField("phone")}
                   placeholder="+91 98765 43210"
                   aria-invalid={!!fieldErrors.phone}
                   className={fieldErrors.phone ? "border-destructive focus-visible:ring-destructive" : ""}
@@ -229,6 +261,7 @@ function ApplyPage() {
                 <Input
                   value={form.ideaSentence}
                   onChange={(e) => update("ideaSentence", e.target.value)}
+                  onBlur={() => validateField("ideaSentence")}
                   maxLength={200}
                   aria-invalid={!!fieldErrors.ideaSentence}
                   className={fieldErrors.ideaSentence ? "border-destructive focus-visible:ring-destructive" : ""}
@@ -239,6 +272,7 @@ function ApplyPage() {
                   rows={3}
                   value={form.buildingWhat}
                   onChange={(e) => update("buildingWhat", e.target.value)}
+                  onBlur={() => validateField("buildingWhat")}
                   maxLength={600}
                   aria-invalid={!!fieldErrors.buildingWhat}
                   className={fieldErrors.buildingWhat ? "border-destructive focus-visible:ring-destructive" : ""}
@@ -251,22 +285,26 @@ function ApplyPage() {
             <div className="space-y-5">
               <SectionHead n={3} title="Reality Check" />
               <Field label="4. Who is your exact target customer?" required error={fieldErrors.targetCustomer}>
-                <Textarea rows={2} value={form.targetCustomer} onChange={(e) => update("targetCustomer", e.target.value)} maxLength={400}
+                <Textarea rows={2} value={form.targetCustomer} onChange={(e) => update("targetCustomer", e.target.value)}
+                  onBlur={() => validateField("targetCustomer")} maxLength={400}
                   aria-invalid={!!fieldErrors.targetCustomer}
                   className={fieldErrors.targetCustomer ? "border-destructive focus-visible:ring-destructive" : ""} />
               </Field>
               <Field label="5. What real problem are you solving?" required error={fieldErrors.problem}>
-                <Textarea rows={2} value={form.problem} onChange={(e) => update("problem", e.target.value)} maxLength={400}
+                <Textarea rows={2} value={form.problem} onChange={(e) => update("problem", e.target.value)}
+                  onBlur={() => validateField("problem")} maxLength={400}
                   aria-invalid={!!fieldErrors.problem}
                   className={fieldErrors.problem ? "border-destructive focus-visible:ring-destructive" : ""} />
               </Field>
               <Field label="6. How are people currently solving this problem?" required error={fieldErrors.currentSolutions}>
-                <Textarea rows={2} value={form.currentSolutions} onChange={(e) => update("currentSolutions", e.target.value)} maxLength={400}
+                <Textarea rows={2} value={form.currentSolutions} onChange={(e) => update("currentSolutions", e.target.value)}
+                  onBlur={() => validateField("currentSolutions")} maxLength={400}
                   aria-invalid={!!fieldErrors.currentSolutions}
                   className={fieldErrors.currentSolutions ? "border-destructive focus-visible:ring-destructive" : ""} />
               </Field>
               <Field label="7. Why would they switch to you?" required error={fieldErrors.whySwitch}>
-                <Textarea rows={2} value={form.whySwitch} onChange={(e) => update("whySwitch", e.target.value)} maxLength={400}
+                <Textarea rows={2} value={form.whySwitch} onChange={(e) => update("whySwitch", e.target.value)}
+                  onBlur={() => validateField("whySwitch")} maxLength={400}
                   aria-invalid={!!fieldErrors.whySwitch}
                   className={fieldErrors.whySwitch ? "border-destructive focus-visible:ring-destructive" : ""} />
               </Field>
@@ -313,7 +351,8 @@ function ApplyPage() {
                 </RadioGroup>
               </Field>
               <Field label="11. By the end of this BYOB batch, clearly describe what you aim to achieve." hint="Be specific — revenue, customers, launch, MVP, etc." required error={fieldErrors.outcome}>
-                <Textarea rows={3} value={form.outcome} onChange={(e) => update("outcome", e.target.value)} maxLength={600}
+                <Textarea rows={3} value={form.outcome} onChange={(e) => update("outcome", e.target.value)}
+                  onBlur={() => validateField("outcome")} maxLength={600}
                   aria-invalid={!!fieldErrors.outcome}
                   className={fieldErrors.outcome ? "border-destructive focus-visible:ring-destructive" : ""} />
               </Field>
@@ -394,7 +433,7 @@ function Field({ label, hint, required, error, children }: { label: string; hint
     <div className="space-y-2">
       <Label className="text-sm font-semibold text-foreground">
         {label}
-        {required && <span className="ml-1 text-primary-glow">*</span>}
+        {required && <span className="ml-1 text-destructive font-bold">*</span>}
       </Label>
       {hint && <p className="text-xs text-muted-foreground">{hint}</p>}
       {children}

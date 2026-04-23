@@ -13,7 +13,7 @@ export const phoneSchema = z
 export const nameSchema = z
   .string()
   .trim()
-  .min(2, { message: "Name must be at least 2 characters" })
+  .min(2, { message: "Full name must be entered" })
   .max(100, { message: "Name must be less than 100 characters" })
   .regex(/^[a-zA-Z\s.''-]+$/, { message: "Name can only contain letters, spaces, and . ' -" });
 
