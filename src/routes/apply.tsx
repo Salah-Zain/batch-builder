@@ -189,11 +189,25 @@ function ApplyPage() {
           {step === 0 && (
             <div className="space-y-5">
               <SectionHead n={1} title="Basic Details" />
-              <Field label="Full Name" required>
-                <Input value={form.fullName} onChange={(e) => update("fullName", e.target.value)} placeholder="Your full name" />
+              <Field label="Full Name" required error={fieldErrors.fullName}>
+                <Input
+                  value={form.fullName}
+                  onChange={(e) => update("fullName", e.target.value)}
+                  placeholder="Your full name"
+                  aria-invalid={!!fieldErrors.fullName}
+                  className={fieldErrors.fullName ? "border-destructive focus-visible:ring-destructive" : ""}
+                />
               </Field>
-              <Field label="Phone Number" required>
-                <Input type="tel" value={form.phone} onChange={(e) => update("phone", e.target.value)} placeholder="+91 ..." />
+              <Field label="Phone Number" required hint="Include country code (e.g. +91 98765 43210)" error={fieldErrors.phone}>
+                <Input
+                  type="tel"
+                  inputMode="tel"
+                  value={form.phone}
+                  onChange={(e) => update("phone", e.target.value)}
+                  placeholder="+91 98765 43210"
+                  aria-invalid={!!fieldErrors.phone}
+                  className={fieldErrors.phone ? "border-destructive focus-visible:ring-destructive" : ""}
+                />
               </Field>
             </div>
           )}
