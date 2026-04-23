@@ -337,6 +337,9 @@ function ApplyPage() {
                     👉 I agree to fully commit to this process.
                   </span>
                 </label>
+                {fieldErrors.agreed && (
+                  <p className="mt-2 text-xs font-medium text-destructive" role="alert">{fieldErrors.agreed}</p>
+                )}
               </div>
             </div>
           )}
