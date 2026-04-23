@@ -1,7 +1,8 @@
-import { createFileRoute, Link } from "@tanstack/react-router";
+import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import { PerpexLogo } from "@/components/PerpexLogo";
 import { ArrowRight, CheckCircle2, Target, Zap } from "lucide-react";
+import { useState, useRef } from "react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -18,6 +19,21 @@ export const Route = createFileRoute("/")({
 });
 
 function Welcome() {
+  const navigate = useNavigate();
+  const [logoClicks, setLogoClicks] = useState(0);
+  const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const handleLogoClick = () => {
+    const next = logoClicks + 1;
+    setLogoClicks(next);
+    if (clickTimer.current) clearTimeout(clickTimer.current);
+    clickTimer.current = setTimeout(() => setLogoClicks(0), 800);
+    if (next >= 3) {
+      setLogoClicks(0);
+      navigate({ to: "/admin/login" });
+    }
+  };
+
   return (
     <div className="h-screen overflow-hidden flex flex-col items-center justify-center px-6 relative">
       {/* Animated Background Orbs */}
@@ -26,6 +42,9 @@ function Welcome() {
       <div className="bg-orb bg-orb-3" />
 
       <main className="mx-auto flex max-w-4xl flex-col items-center text-center relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+        <div className="mb-10 transition-transform hover:scale-105 active:scale-95">
+          <PerpexLogo onClick={handleLogoClick} />
+        </div>
 
         <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-primary/20 bg-primary/5 px-4 py-1.5 text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
           <span className="h-1.5 w-1.5 rounded-full bg-primary-glow animate-pulse" />
@@ -59,25 +78,6 @@ function Welcome() {
           </div>
         </div>
 
-        <div className="mt-16 grid w-full max-w-4xl gap-6 sm:grid-cols-3">
-          {[
-            { icon: Target, title: "Get Clarity", desc: "Define your real target audience & core problem" },
-            { icon: Zap, title: "Take Action", desc: "Move from messy ideas to structured execution" },
-            { icon: CheckCircle2, title: "Ship Results", desc: "Focus on revenue, MVP, and first customers" },
-          ].map(({ icon: Icon, title, desc }, i) => (
-            <div
-              key={title}
-              style={{ animationDelay: `${i * 100}ms` }}
-              className="group rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-6 text-left shadow-[var(--shadow-card)] transition-all hover:-translate-y-1 hover:border-primary/30 hover:bg-card animate-in fade-in slide-in-from-bottom-2 duration-500 fill-mode-both"
-            >
-              <div className="mb-4 flex h-10 w-10 items-center justify-center rounded-xl bg-primary/10 transition-colors group-hover:bg-primary group-hover:text-primary-foreground">
-                <Icon className="h-5 w-5" />
-              </div>
-              <h3 className="text-lg font-bold text-foreground">{title}</h3>
-              <p className="mt-2 text-sm leading-relaxed text-muted-foreground">{desc}</p>
-            </div>
-          ))}
-        </div>
       </main>
     </div>
   );

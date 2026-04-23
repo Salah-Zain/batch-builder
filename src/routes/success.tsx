@@ -1,6 +1,7 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { Button } from "@/components/ui/button";
 import logo from "@/assets/perpex-logo.png";
+import { PerpexLogo } from "@/components/PerpexLogo";
 import { CheckCircle2 } from "lucide-react";
 
 export const Route = createFileRoute("/success")({
@@ -23,7 +24,7 @@ function SuccessPage() {
 
       <div className="w-full max-w-xl rounded-3xl border border-border/50 bg-card/50 backdrop-blur-md p-10 text-center shadow-[var(--shadow-elegant)] relative z-10 animate-in fade-in zoom-in-95 duration-700">
         <div className="mx-auto mb-6 flex h-24 w-24 items-center justify-center rounded-2xl bg-blue-50 ring-2 ring-blue-100 shadow-inner">
-          <img src={logo} alt="PerpeX logo" className="h-14 w-14 object-contain" />
+          <PerpexLogo className="scale-125" />
         </div>
 
         <div className="mx-auto mb-4 inline-flex items-center gap-2 rounded-full bg-blue-100 px-3 py-1 text-xs font-bold uppercase tracking-wider text-blue-700">

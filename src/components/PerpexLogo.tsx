@@ -7,24 +7,22 @@ type Props = {
   onClick?: () => void;
 };
 
-export function PerpexLogo({ className, showWordmark = true, onClick }: Props) {
+export function PerpexLogo({ className, onClick }: Props) {
   return (
-    <button
-      type="button"
+    <div
       onClick={onClick}
       className={cn(
-        "flex items-center gap-2.5 select-none",
+        "flex items-center justify-center select-none",
         onClick ? "cursor-pointer" : "cursor-default",
         className
       )}
-      aria-label="PerpeX"
     >
-      <img src={logo} alt="PerpeX logo" className="h-9 w-9 object-contain" draggable={false} />
-      {showWordmark && (
-        <span className="text-xl font-bold tracking-tight text-primary">
-          PerpeX<span className="text-primary-glow">.</span>
-        </span>
-      )}
-    </button>
+      <img 
+        src={logo} 
+        alt="PerpeX logo" 
+        className="h-16 w-auto object-contain" 
+        draggable={false} 
+      />
+    </div>
   );
 }

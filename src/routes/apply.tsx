@@ -211,10 +211,9 @@ function ApplyPage() {
       <div className="bg-orb bg-orb-3" />
 
       <main className="w-full max-w-3xl relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700 flex flex-col max-h-[90vh]">
-        {/* <div className="mb-10 text-center">
-          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Gamma Batch · Pre-Batch Alignment</p>
-          <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">Application Form</h1>
-        </div> */}
+        <div className="mb-8 flex flex-col items-center animate-in fade-in slide-in-from-top-4 duration-1000">
+          <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary/60">Gamma Batch · Pre-Batch Alignment</p>
+        </div>
 
         {/* Progress Card */}
         <div className="group mb-6 rounded-3xl border border-border/50 bg-card/50 backdrop-blur-md p-8 shadow-[var(--shadow-card)] transition-all hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5">
