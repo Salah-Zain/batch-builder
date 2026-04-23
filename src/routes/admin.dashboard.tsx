@@ -98,28 +98,53 @@ function AdminDashboard() {
     navigate({ to: "/" });
   };
 
-  const exportCSV = () => {
-    const headers = [
-      "Submitted At", "Full Name", "Phone", "Stage", "Idea (one sentence)",
-      "What they're building", "Target Customer", "Problem", "Current Solutions",
-      "Why Switch", "Done So Far", "Bottleneck", "Hours Weekly", "Outcome", "Agreed",
-    ];
-    const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
-    const rows = filtered.map((s) => [
-      new Date(s.submittedAt).toISOString(),
-      s.fullName, s.phone, s.stage, s.ideaSentence, s.buildingWhat,
-      s.targetCustomer, s.problem, s.currentSolutions, s.whySwitch,
-      s.doneSoFar.join("; "), s.bottleneck, s.hoursWeekly, s.outcome,
-      s.agreed ? "Yes" : "No",
-    ].map((v) => escape(String(v ?? ""))).join(","));
-    const csv = [headers.map(escape).join(","), ...rows].join("\n");
-    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `perpex-submissions-${new Date().toISOString().slice(0, 10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
+  const exportCSV = async () => {
+    if (filtered.length === 0) return;
+    setExporting(true);
+    setExportProgress(0);
+    const toastId = toast.loading(`Preparing CSV (${filtered.length} rows)…`);
+    try {
+      const headers = [
+        "Submitted At", "Full Name", "Phone", "Stage", "Idea (one sentence)",
+        "What they're building", "Target Customer", "Problem", "Current Solutions",
+        "Why Switch", "Done So Far", "Bottleneck", "Hours Weekly", "Outcome", "Agreed",
+      ];
+      const escape = (v: string) => `"${v.replace(/"/g, '""')}"`;
+      const total = filtered.length;
+      const CHUNK = 100;
+      const rows: string[] = [];
+      for (let i = 0; i < total; i += CHUNK) {
+        const slice = filtered.slice(i, i + CHUNK);
+        for (const s of slice) {
+          rows.push([
+            new Date(s.submittedAt).toISOString(),
+            s.fullName, s.phone, s.stage, s.ideaSentence, s.buildingWhat,
+            s.targetCustomer, s.problem, s.currentSolutions, s.whySwitch,
+            s.doneSoFar.join("; "), s.bottleneck, s.hoursWeekly, s.outcome,
+            s.agreed ? "Yes" : "No",
+          ].map((v) => escape(String(v ?? ""))).join(","));
+        }
+        const pct = Math.min(100, Math.round(((i + slice.length) / total) * 100));
+        setExportProgress(pct);
+        // Yield to browser so progress UI can update on large sets
+        if (total > CHUNK) await new Promise((r) => setTimeout(r, 0));
+      }
+      const csv = [headers.map(escape).join(","), ...rows].join("\n");
+      const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `perpex-submissions-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(`Exported ${total} submission${total === 1 ? "" : "s"} to CSV`, { id: toastId });
+    } catch (e) {
+      console.error(e);
+      toast.error("CSV export failed. Please try again.", { id: toastId });
+    } finally {
+      setExporting(false);
+      setExportProgress(0);
+    }
   };
 
   const clearFilters = () => {
