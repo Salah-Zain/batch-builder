@@ -29,14 +29,18 @@ export const Route = createRootRoute({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
-      { title: "Lovable App" },
-      { name: "description", content: "Lovable Generated Project" },
+      { title: "BYOB" },
+      { name: "description", content: "Batch Builder is an application that guides users through a structured pre-batch alignment process." },
       { name: "author", content: "Lovable" },
-      { property: "og:title", content: "Lovable App" },
-      { property: "og:description", content: "Lovable Generated Project" },
+      { property: "og:title", content: "BYOB" },
+      { property: "og:description", content: "Batch Builder is an application that guides users through a structured pre-batch alignment process." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
       { name: "twitter:site", content: "@Lovable" },
+      { name: "twitter:title", content: "BYOB" },
+      { name: "twitter:description", content: "Batch Builder is an application that guides users through a structured pre-batch alignment process." },
+      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2fa0cfc7-a161-487f-9993-d255bd223cd2/id-preview-3da6310a--02856a93-b0fd-40aa-adc9-e0bd3bb1d789.lovable.app-1776926012930.png" },
+      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2fa0cfc7-a161-487f-9993-d255bd223cd2/id-preview-3da6310a--02856a93-b0fd-40aa-adc9-e0bd3bb1d789.lovable.app-1776926012930.png" },
     ],
     links: [
       {
