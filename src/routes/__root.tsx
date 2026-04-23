@@ -39,8 +39,8 @@ export const Route = createRootRoute({
       { name: "twitter:site", content: "@Lovable" },
       { name: "twitter:title", content: "BYOB" },
       { name: "twitter:description", content: "Batch Builder is an application that guides users through a structured pre-batch alignment process." },
-      { property: "og:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2fa0cfc7-a161-487f-9993-d255bd223cd2/id-preview-3da6310a--02856a93-b0fd-40aa-adc9-e0bd3bb1d789.lovable.app-1776926012930.png" },
-      { name: "twitter:image", content: "https://pub-bb2e103a32db4e198524a2e9ed8f35b4.r2.dev/2fa0cfc7-a161-487f-9993-d255bd223cd2/id-preview-3da6310a--02856a93-b0fd-40aa-adc9-e0bd3bb1d789.lovable.app-1776926012930.png" },
+      { property: "og:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/ZzYIZABVz3Tsg7F7ZUzrJ2bLGnG2/social-images/social-1776934399508-logo.webp" },
+      { name: "twitter:image", content: "https://storage.googleapis.com/gpt-engineer-file-uploads/ZzYIZABVz3Tsg7F7ZUzrJ2bLGnG2/social-images/social-1776934399508-logo.webp" },
     ],
     links: [
       {
