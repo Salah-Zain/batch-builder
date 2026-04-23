@@ -202,7 +202,7 @@ function ApplyPage() {
   const isLast = step === STEP_TITLES.length - 1;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center text-foreground relative overflow-hidden px-6 py-12">
+    <div className="h-screen overflow-hidden flex flex-col items-center justify-center bg-[var(--gradient-soft)] text-foreground relative px-6">
       <Toaster richColors position="top-center" />
 
       {/* Animated Background Orbs */}
@@ -210,14 +210,14 @@ function ApplyPage() {
       <div className="bg-orb bg-orb-2" />
       <div className="bg-orb bg-orb-3" />
 
-      <main className="w-full max-w-3xl relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700">
+      <main className="w-full max-w-3xl relative z-10 animate-in fade-in slide-in-from-bottom-4 duration-700 flex flex-col max-h-[90vh]">
         {/* <div className="mb-10 text-center">
           <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">Gamma Batch · Pre-Batch Alignment</p>
           <h1 className="mt-3 text-4xl font-black tracking-tight md:text-5xl">Application Form</h1>
         </div> */}
 
         {/* Progress Card */}
-        <div className="group mb-12 rounded-3xl border border-border/50 bg-card/50 backdrop-blur-md p-8 shadow-[var(--shadow-card)] transition-all hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5">
+        <div className="group mb-6 rounded-3xl border border-border/50 bg-card/50 backdrop-blur-md p-8 shadow-[var(--shadow-card)] transition-all hover:border-primary/20 hover:shadow-lg hover:shadow-primary/5">
           <div className="mb-6 flex items-center gap-5">
             <div className="flex h-14 w-14 shrink-0 items-center justify-center rounded-2xl bg-primary text-2xl font-black text-primary-foreground shadow-lg shadow-primary/20">
               {step + 1}
@@ -246,7 +246,7 @@ function ApplyPage() {
 
         <section
           key={step}
-          className="group min-h-[320px] rounded-3xl border border-border/50 bg-card/50 backdrop-blur-md p-8 shadow-[var(--shadow-card)] transition-all hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 animate-in zoom-in-95 slide-in-from-bottom-2 duration-500"
+          className="group flex-1 overflow-y-auto rounded-3xl border border-border/50 bg-card/50 backdrop-blur-md p-8 shadow-[var(--shadow-card)] transition-all hover:border-primary/20 hover:shadow-xl hover:shadow-primary/5 animate-in zoom-in-95 slide-in-from-bottom-2 duration-500 scrollbar-thin scrollbar-track-transparent scrollbar-thumb-primary/20"
         >
           {step === 0 && (
             <div className="space-y-5">
