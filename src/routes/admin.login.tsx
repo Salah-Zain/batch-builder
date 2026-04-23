@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { PerpexLogo } from "@/components/PerpexLogo";
-import { setAdminSession } from "@/lib/storage";
+import { adminLogin } from "@/lib/storage";
 import { Toaster } from "@/components/ui/sonner";
 import { toast } from "sonner";
-import { Lock } from "lucide-react";
+import { Lock, Loader2 } from "lucide-react";
 
 export const Route = createFileRoute("/admin/login")({
   head: () => ({ meta: [{ title: "Admin Login — PerpeX" }] }),
@@ -18,14 +18,22 @@ function AdminLogin() {
   const navigate = useNavigate();
   const [u, setU] = useState("");
   const [p, setP] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const onSubmit = (e: React.FormEvent) => {
+  const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (u === "admin" && p === "admin123") {
-      setAdminSession(true);
-      navigate({ to: "/admin/dashboard" });
-    } else {
-      toast.error("Invalid credentials");
+    setLoading(true);
+    try {
+      const ok = await adminLogin(u, p);
+      if (ok) {
+        navigate({ to: "/admin/dashboard" });
+      } else {
+        toast.error("Invalid credentials or not an admin");
+      }
+    } catch {
+      toast.error("Login failed. Please try again.");
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -46,13 +54,15 @@ function AdminLogin() {
         <form onSubmit={onSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label className="text-sm font-semibold text-foreground">Username</Label>
-            <Input value={u} onChange={(e) => setU(e.target.value)} autoFocus />
+            <Input value={u} onChange={(e) => setU(e.target.value)} autoFocus placeholder="admin" />
           </div>
           <div className="space-y-2">
             <Label className="text-sm font-semibold text-foreground">Password</Label>
             <Input type="password" value={p} onChange={(e) => setP(e.target.value)} />
           </div>
-          <Button type="submit" variant="hero" size="lg" className="w-full">Sign In</Button>
+          <Button type="submit" variant="hero" size="lg" className="w-full" disabled={loading}>
+            {loading ? <><Loader2 className="h-4 w-4 animate-spin" /> Signing in…</> : "Sign In"}
+          </Button>
         </form>
       </div>
     </div>
