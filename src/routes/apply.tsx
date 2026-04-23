@@ -215,7 +215,7 @@ function ApplyPage() {
           {step === 1 && (
             <div className="space-y-5">
               <SectionHead n={2} title="Your Starting Point" />
-              <Field label="1. Which stage are you currently in?" required>
+              <Field label="1. Which stage are you currently in?" required error={fieldErrors.stage}>
                 <RadioGroup value={form.stage} onValueChange={(v) => update("stage", v)} className="grid gap-2 sm:grid-cols-2">
                   {STAGES.map((s) => (
                     <label key={s} className="flex cursor-pointer items-center gap-3 rounded-lg border border-border bg-background p-3 hover:border-primary/50">
@@ -225,11 +225,24 @@ function ApplyPage() {
                   ))}
                 </RadioGroup>
               </Field>
-              <Field label="2. Describe your business / idea in one clear sentence." required>
-                <Input value={form.ideaSentence} onChange={(e) => update("ideaSentence", e.target.value)} maxLength={200} />
+              <Field label="2. Describe your business / idea in one clear sentence." required error={fieldErrors.ideaSentence}>
+                <Input
+                  value={form.ideaSentence}
+                  onChange={(e) => update("ideaSentence", e.target.value)}
+                  maxLength={200}
+                  aria-invalid={!!fieldErrors.ideaSentence}
+                  className={fieldErrors.ideaSentence ? "border-destructive focus-visible:ring-destructive" : ""}
+                />
               </Field>
-              <Field label="3. What exactly are you trying to build?" hint="Be specific — avoid vague answers like 'startup'" required>
-                <Textarea rows={3} value={form.buildingWhat} onChange={(e) => update("buildingWhat", e.target.value)} maxLength={600} />
+              <Field label="3. What exactly are you trying to build?" hint="Be specific — avoid vague answers like 'startup'" required error={fieldErrors.buildingWhat}>
+                <Textarea
+                  rows={3}
+                  value={form.buildingWhat}
+                  onChange={(e) => update("buildingWhat", e.target.value)}
+                  maxLength={600}
+                  aria-invalid={!!fieldErrors.buildingWhat}
+                  className={fieldErrors.buildingWhat ? "border-destructive focus-visible:ring-destructive" : ""}
+                />
               </Field>
             </div>
           )}
