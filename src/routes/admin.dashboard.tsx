@@ -72,13 +72,13 @@ function AdminDashboard() {
     const q = query.trim().toLowerCase();
     return list.filter((s) => {
       if (stageFilter !== "all" && s.stage !== stageFilter) return false;
-      if (bottleneckFilter !== "all" && s.bottleneck !== bottleneckFilter) return false;
+      if (bottleneckFilter !== "all" && !s.bottleneck.includes(bottleneckFilter)) return false;
       if (!q) return true;
       return (
         s.fullName.toLowerCase().includes(q) ||
         s.phone.toLowerCase().includes(q) ||
         s.stage.toLowerCase().includes(q) ||
-        s.bottleneck.toLowerCase().includes(q) ||
+        s.bottleneck.some(b => b.toLowerCase().includes(q)) ||
         s.ideaSentence.toLowerCase().includes(q)
       );
     });
@@ -120,7 +120,7 @@ function AdminDashboard() {
             new Date(s.submittedAt).toISOString(),
             s.fullName, s.phone, s.stage, s.ideaSentence, s.buildingWhat,
             s.targetCustomer, s.problem, s.currentSolutions, s.whySwitch,
-            s.doneSoFar.join("; "), s.bottleneck, s.hoursWeekly, s.outcome,
+            s.doneSoFar.join("; "), s.bottleneck.join("; "), s.hoursWeekly, s.outcome,
             s.agreed ? "Yes" : "No",
           ].map((v) => escape(String(v ?? ""))).join(","));
         }
@@ -309,7 +309,7 @@ function AdminDashboard() {
                       <TableCell className="font-semibold text-foreground">{s.fullName}</TableCell>
                       <TableCell className="text-foreground">{s.phone}</TableCell>
                       <TableCell><Badge>{s.stage}</Badge></TableCell>
-                      <TableCell className="text-foreground">{s.bottleneck}</TableCell>
+                      <TableCell className="text-foreground">{formatList(s.bottleneck)}</TableCell>
                       <TableCell className="text-foreground">{s.hoursWeekly}</TableCell>
                       <TableCell className="text-muted-foreground">
                         {new Date(s.submittedAt).toLocaleDateString()}{" "}
@@ -344,8 +344,8 @@ function AdminDashboard() {
               <Detail k="Problem" v={active.problem} />
               <Detail k="Current solutions" v={active.currentSolutions} />
               <Detail k="Why switch" v={active.whySwitch} />
-              <Detail k="Done so far" v={active.doneSoFar.join(", ")} />
-              <Detail k="Bottleneck" v={active.bottleneck} />
+              <Detail k="Done so far" v={formatList(active.doneSoFar)} />
+              <Detail k="Bottleneck" v={formatList(active.bottleneck)} />
               <Detail k="Hours weekly" v={active.hoursWeekly} />
               <Detail k="Outcome goal" v={active.outcome} />
               <Detail k="Agreed to commit" v={active.agreed ? "Yes ✅" : "No"} />
@@ -390,4 +390,28 @@ function Detail({ k, v }: { k: string; v: string }) {
       <p className="mt-1 whitespace-pre-wrap text-foreground">{v || "—"}</p>
     </div>
   );
+}
+
+function formatList(items: string[]): string {
+  if (!items || items.length === 0) return "—";
+  
+  // Reconstruct words from accidental character spread
+  const result: string[] = [];
+  let currentWord = "";
+  
+  for (const item of items) {
+    // If it's a single character, it's likely part of a spread word
+    if (item.length === 1) {
+      currentWord += item;
+    } else {
+      if (currentWord) {
+        result.push(currentWord);
+        currentWord = "";
+      }
+      result.push(item);
+    }
+  }
+  if (currentWord) result.push(currentWord);
+  
+  return result.join(", ");
 }

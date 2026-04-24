@@ -13,7 +13,7 @@ export type Submission = {
   currentSolutions: string;
   whySwitch: string;
   doneSoFar: string[];
-  bottleneck: string;
+  bottleneck: string[];
   hoursWeekly: string;
   outcome: string;
   agreed: boolean;
@@ -32,7 +32,7 @@ type Row = {
   current_solutions: string;
   why_switch: string;
   done_so_far: string[];
-  bottleneck: string;
+  bottleneck: string[];
   hours_weekly: string;
   outcome: string;
   agreed: boolean;
@@ -51,7 +51,19 @@ const fromRow = (r: Row): Submission => ({
   currentSolutions: r.current_solutions,
   whySwitch: r.why_switch,
   doneSoFar: r.done_so_far ?? [],
-  bottleneck: r.bottleneck,
+  bottleneck: (() => {
+    if (Array.isArray(r.bottleneck)) return r.bottleneck;
+    if (typeof r.bottleneck === "string") {
+      try {
+        const parsed = JSON.parse(r.bottleneck);
+        if (Array.isArray(parsed)) return parsed;
+      } catch (e) {
+        // Not JSON
+      }
+      return r.bottleneck ? [r.bottleneck] : [];
+    }
+    return [];
+  })(),
   hoursWeekly: r.hours_weekly,
   outcome: r.outcome,
   agreed: r.agreed,

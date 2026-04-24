@@ -40,7 +40,7 @@ type FormState = {
   currentSolutions: string;
   whySwitch: string;
   doneSoFar: string[];
-  bottleneck: string;
+  bottleneck: string[];
   hoursWeekly: string;
   outcome: string;
   agreed: boolean;
@@ -81,7 +81,7 @@ function ApplyPage() {
     return {
       fullName: "", phone: "", stage: "", ideaSentence: "", buildingWhat: "",
       targetCustomer: "", problem: "", currentSolutions: "", whySwitch: "",
-      doneSoFar: [], bottleneck: "", hoursWeekly: "", outcome: "", agreed: false,
+      doneSoFar: [], bottleneck: [], hoursWeekly: "", outcome: "", agreed: false,
     };
   });
 
@@ -114,6 +114,14 @@ function ApplyPage() {
       form.doneSoFar.includes(opt)
         ? form.doneSoFar.filter((x) => x !== opt)
         : [...form.doneSoFar, opt]
+    );
+
+  const toggleBottleneck = (opt: string) =>
+    update(
+      "bottleneck",
+      form.bottleneck.includes(opt)
+        ? form.bottleneck.filter((x) => x !== opt)
+        : [...form.bottleneck, opt]
     );
 
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
@@ -354,15 +362,15 @@ function ApplyPage() {
                   ))}
                 </div>
               </Field>
-              <Field label="9. What is your biggest bottleneck right now?" required error={fieldErrors.bottleneck}>
-                <RadioGroup value={form.bottleneck} onValueChange={(v) => update("bottleneck", v)} className="grid gap-2 sm:grid-cols-2">
+              <Field label="9. What is your biggest bottleneck right now?" hint="Select all that apply" required error={fieldErrors.bottleneck}>
+                <div className="grid gap-2 sm:grid-cols-2">
                   {BOTTLENECKS.map((b) => (
                     <label key={b} className="flex cursor-pointer items-center gap-3 rounded-lg border border-border bg-background p-3 hover:border-primary/50">
-                      <RadioGroupItem value={b} />
+                      <Checkbox checked={form.bottleneck.includes(b)} onCheckedChange={() => toggleBottleneck(b)} />
                       <span className="text-sm text-foreground">{b}</span>
                     </label>
                   ))}
-                </RadioGroup>
+                </div>
               </Field>
             </div>
           )}

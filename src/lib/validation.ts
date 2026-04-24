@@ -38,7 +38,7 @@ export const submissionSchema = z.object({
   currentSolutions: longText("Current solutions", 10, 400),
   whySwitch: longText("Why switch", 10, 400),
   doneSoFar: z.array(z.string()).min(1, { message: "Select at least one option" }),
-  bottleneck: z.string().min(1, { message: "Please select your biggest bottleneck" }),
+  bottleneck: z.array(z.string()).min(1, { message: "Select at least one bottleneck" }),
   hoursWeekly: z.string().min(1, { message: "Please choose your weekly hours" }),
   outcome: longText("Outcome", 15, 600),
   agreed: z.literal(true, { message: "You must agree to commit" }),
