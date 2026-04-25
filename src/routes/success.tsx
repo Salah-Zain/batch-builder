@@ -32,15 +32,14 @@ function SuccessPage() {
         </div>
 
         <h1 className="text-3xl font-black tracking-tight text-foreground md:text-4xl">
-          You're in the pipeline 🚀
+          Welcome to the COHORT GAMMA 🚀
         </h1>
 
         <p className="mt-4 text-base text-foreground/80">
-          Thank you for completing the <span className="font-semibold text-primary">PerpeX BYOB Gamma Batch</span> pre-batch alignment form.
+          You've successfully aligned for the <span className="font-semibold text-primary">COHORT GAMMA</span>. Get ready to build, execute, and win.
         </p>
         <p className="mt-2 text-sm text-muted-foreground">
-          Our team will review your application and reach out shortly with next steps. Until then —
-          stay sharp, keep building, and get ready to execute.
+          Your profile is now synced with our systems. Stay sharp, keep building, and get ready to execute.
         </p>
 
         <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
