@@ -67,7 +67,7 @@ function Welcome() {
         <div className="mt-12 flex flex-col items-center gap-4">
           <Button asChild variant="hero" size="xl" className="h-14 px-10 text-lg shadow-[0_0_20px_rgba(var(--primary-rgb),0.3)] hover:shadow-[0_0_30px_rgba(var(--primary-rgb),0.4)] transition-all">
             <Link to="/apply">
-              Apply for Gamma Batch
+              Start Your Journey
               <ArrowRight className="ml-2 h-5 w-5" />
             </Link>
           </Button>
